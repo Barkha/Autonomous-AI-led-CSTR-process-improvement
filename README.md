@@ -36,7 +36,7 @@ At the end of the hands-on-lab, you will have confidence in designing, developin
 ## Azure services and related products
 
 - Bonsai Tool Chain
-- Python Simulator
+- Python Simulation
 - Azure Container Instances 
 
 ## Azure solution
