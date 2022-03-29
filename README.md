@@ -2,9 +2,9 @@
 
 Contoso is world wide leader in gases, chemicals and services.  It's main factory creates 60% of the chemicals needed for industry and manufacturing as well as agriculture.
 
-Contos has been going through a digital transformation and is looking to embrace AI and Autonomous systems for it's Chemial processing plant in order to improve both safety and optimize production. One of the primary target for optimization is the Chemical plant is a Continuous Stirred Tank Reactor (CSTR) is essentially a tank that has a stirring apparatus to continuously mix reactants inside. 
+Contos has been going through a digital transformation and is looking to embrace AI and Autonomous systems for it's Chemial processing plant in order to improve both safety and optimize production. One of the primary targets for optimization is the Continuous Stirred Tank Reactor (CSTR). This reactor is essentially a tank that has a stirring apparatus to continuously mix reactants inside and continuously manufacture a chemical product. 
 
-One of the concerns regarding this CSTR is an exothermic reaction, that produces heat, meaning the reactor temperature must be controlled to prevent thermal runaway, when the reactor becomes uncontrollably hot. The CSTR needs to operate under transient and steady state conditions. During continuous steady-state operation, the CSTR is producing a specified product. When the CSTR is starting up or transitioning to produce different output concentrations it is in transient state. The transient state is difficult to control to reach the target concentration of the product while preventing thermal runaway.
+One of the concerns regarding this CSTR is that the chemical reaction happening inside is exothermic, meaning it produces heat. As a result, the reactor temperature must be controlled to prevent thermal runaway, when the reactor becomes uncontrollably hot. The CSTR needs to operate under transient and steady state conditions. During continuous steady-state operation, the CSTR is producing a specified product. When the CSTR is starting up or transitioning to produce different products, it is in transient state. During transient state, it is difficult to control the reactor to reach the target concentration of the product while preventing thermal runaway.
 
 
 ## Target Audience
@@ -19,11 +19,16 @@ Data Scientists
 
 In this workshop, you will work as a group to setup and configure a Bonsai Brain to manage the CSTR during both the steady state to optimize product and maintain heat, and the transient state to prevent thermal runaway or overheating.  This process will incluse completing the AI Spec sheet, deploying a simulator, and programing and training a Bonsai Brain using Inkling.  Note that a simulator for this workshop already exists.  Also note that the actual deployment of the brain is not covered in it's entirety.
 
-At the end of this workshop, you will have learned to use the Bonsai Tool chain - including problem definition and use case definition using the AI Spec, Bonsai Platform using Inkling and using and deployin a simulator written in ??.
+At the end of this workshop, you will have learned to use the Bonsai Tool chain - including:
+- Designing a brain, from problem definition and use case definition using the AI Spec
+- Connecting a Python Simulator to the Bonsai Platform
+- Building and training a brain using Inkling and the visual editor in the Bonsai Web UI
+- Deploying a brain as a docker container
+- Evaluating a brain against and industry standard (maybe?)
 
 ### Whiteboard Design Session
 
-In this whiteboard design session, you will work with a group to design a solution for operating the CSTR using the Bonsai Toolchain, while understanding the challenges and KPIs, clarifying the objective, operational goals, using Machine Teaching, defining control actions and constrints, and using Deep Reinforcement Learning.
+In this whiteboard design session, you will work with a group to design a solution for operating the CSTR using the Bonsai Toolchain, while understanding the challenges and KPIs, clarifying the objective, operational goals, using Machine Teaching, defining control actions and constraints, and using Deep Reinforcement Learning.
 
 At the end of this whiteboard design session, you will have gained insight on how best to take advantage of the Bonsai Tool Chain and use the AI Solution Specification.
 
@@ -36,7 +41,7 @@ At the end of the hands-on-lab, you will have confidence in designing, developin
 ## Azure services and related products
 
 - Bonsai Tool Chain
-- Python Simulation
+- Python Simulator
 - Azure Container Instances 
 
 ## Azure solution
