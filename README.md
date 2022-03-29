@@ -23,31 +23,29 @@ At the end of this workshop, you will have learned to use the Bonsai Tool chain 
 
 ### Whiteboard Design Session
 
-In this whiteboard design session, you will work with a group to design a solution for operating the CSTR .
+In this whiteboard design session, you will work with a group to design a solution for operating the CSTR using the Bonsai Toolchain, while understanding the challenges and KPIs, clarifying the objective, operational goals, using Machine Teaching, defining control actions and constrints, and using Deep Reinforcement Learning.
 
-At the end of this whiteboard design session, you will have gained insight on how best to take advantage of the new serverless wave by designing a highly scalable and cost-effective solution that requires very little code and virtually no infrastructure, compared to traditional hosted web applications and services.
+At the end of this whiteboard design session, you will have gained insight on how best to take advantage of the Bonsai Tool Chain and use the AI Solution Specification.
 
 ### Hands-on Lab
 
-In this hand-on lab, you will be challenged to implement an end-to-end scenario using a supplied sample that is based on Microsoft Azure Functions, Azure Cosmos DB, Event Grid, and related services. The scenario will include implementing compute, storage, workflows, and monitoring, using various components of Microsoft Azure. The hands-on lab can be implemented on your own, but it is highly recommended to pair up with other members at the lab to model a real-world experience and to allow each member to share their expertise for the overall solution.
+In this hand-on lab, you will be challenged to implement an end-to-end scenario using a supplied sample that is based on the Bonsai Tool Chain and a Python based simulation.  This will include the use of the Bonsai No-Code UI, understanding and using Machine Teaching, understanding and using Inkling - a language developed for use with the Bonsai Platform, as well as learning how to use Simulations with Bonsai, and how to train a Bonsai Brain and deploy a trained Bonsai Brain.
 
-At the end of the hands-on-lab, you will have confidence in designing, developing, and monitoring a serverless solution that is resilient, scalable, and cost-effective.
+At the end of the hands-on-lab, you will have confidence in designing, developing, and monitoring an Autnonomous system using Bonsai.
 
 ## Azure services and related products
 
-- Azure Functions
-- Azure Cognitive Services
-- Azure Event Grid
-- Application Insights
-- Azure Cosmos DB
-- Logic Apps
+- Bonsai Tool Chain
+- Python Simulator
+- Azure Container Instances 
 
 ## Azure solution
 
-Cloud-Native Apps
+Bonsai 
 
 ## Related references, resources, and material
 
-- [Serverless Web Application Reference Architecture](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/serverless/web-app)
-- [Serverless event processing using Azure Functions Reference Architecture](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/serverless/event-processing)
+- [Autonomous Systems](https://docs.microsoft.com/en-us/autonomous-systems/)
+- [Project Bonsai](https://docs.microsoft.com/en-us/bonsai/)
+- [Bonsai UI](http://preview.bons.ai/)
 - [MCW](https://github.com/Microsoft/MCW) 
