@@ -294,7 +294,7 @@ https://github.com/microsoft/bonsai-cstr
 
 ![Create Simulator.](media/4-1.png "Create Simulator 1")
 
-4. From the poup, select "MathLabs":
+4. From the poup, select "MathWorks Simulink":
 
 ![Create Simulator.](media/4-2.png "Create Simulator 2")
 
@@ -309,10 +309,6 @@ https://github.com/microsoft/bonsai-cstr
 7. After you select the Create Simulator, you should see a new Simulator added that looks something like this:
 
 ![Create Simulator.](media/4-5.png "Create Simulator 5")
-
-4. Select the Launch Simulator which should fetch the Simulator Interface like so: (Note this may take a while).
-
-![Create Simulator.](media/4-6.png "Create Simulator 6")
 
 Note that you should be able to see the definition of SimState, SimAction and SimConfig.  The SimState and SimAction should match exactly with the way we defined it.  The additional SimConfig section needs to be added to the Inkling code.
 
@@ -346,137 +342,11 @@ Once you have a Simulator setup, you will need to update the inkling code to con
 
 ![Create Simulator.](media/4-6.png "Create Simulator 6")
 
-### Task 3: Code modifications to integrate the simulator.
-
-With the infrastructure in place, we can set up continuous deployment with GitHub Actions.
-
-1. Open the `deploy-sp.ps1` PowerShell script in the `infrastructure` folder of your lab files GitHub repository and add the same custom lowercase three-letter abbreviation we used in a previous exercise for `$studentprefix` variable on the first line. Note the call to create a Service Principal.
-
-    ```pwsh
-    $studentprefix ="Your 3 letter abbreviation here"
-    $resourcegroupName = "fabmedical-rg-" + $studentprefix
-
-    $id = $(az group show `
-        --name $resourcegroupName `
-        --query id)
-
-    az ad sp create-for-rbac `
-        --name "fabmedical-$studentprefix" `
-        --sdk-auth `
-        --role contributor `
-        --scopes $id
-    ```
-
-2. Execute the `deploy-sp.ps1` PowerShell script. Copy the resulting JSON output for use in the next step.
-
-    ```pwsh
-    {
-        "clientId": "...",
-        "clientSecret": "...",
-        "subscriptionId": "...",
-        "tenantId": "...",
-        "activeDirectoryEndpointUrl": "https://login.microsoftonline.com",
-        "resourceManagerEndpointUrl": "https://management.azure.com/",
-        "activeDirectoryGraphResourceId": "https://graph.windows.net/",
-        "sqlManagementEndpointUrl": "https://management.core.windows.net:8443/",
-        "galleryEndpointUrl": "https://gallery.azure.com/",
-        "managementEndpointUrl": "https://management.core.windows.net/"
-    }
-    ```
-
-3. Create a new repository secret named `AZURE_CREDENTIALS`. Paste the JSON output copied from Step 2 to the secret value and save it.
-
-4. Edit the `docker-publish.yml` file in the `.github\workflows` folder. Add the following job to the end of this file:
-
-    > **Note**: Make sure to change the student prefix for the last action in the `deploy` job.
-
-    ```yaml
-      deploy:
-        # The type of runner that the job will run on
-        runs-on: ubuntu-latest
-
-        # Steps represent a sequence of tasks that will be executed as part of the job
-        steps:
-        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-        - uses: actions/checkout@v2                
-
-        - name: Login on Azure CLI
-          uses: azure/login@v1.1
-          with:
-            creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-        - name: Deploy WebApp
-          shell: pwsh
-          env:
-            CR_PAT: ${{ secrets.CR_PAT }}
-          run: |
-            cd ./infrastructure
-            ./deploy-webapp.ps1 -studentprefix hbs  # <-- This needs to
-                                                    # match the student
-                                                    # prefix we use in
-                                                    # previous steps.
-    ```
-
-5. Commit the YAML file to your `main` branch. A GitHub action should begin to execute for the updated workflow.
-
-    > **Note**: Make sure that your Actions workflow file does not contain any syntax errors, which may appear when you copy and paste. They are highlighted in the editor or when the Action tries to run, as shown below.
-
-    ![GitHub Actions workflow file syntax error.](media/github-actions-workflow-file-error.png "Syntax error in Actions workflow file")
-
-6. Observe that the action builds the docker images, pushes them to the container registry, and deploys them to the Azure web application.
-
-    ![GitHub Action detail reflecting Docker ](media/hol-ex3-task2-step8-1.png "GitHub Action detail")
-
-7. Perform a `git pull` on your local repository folder to fetch the latest changes from GitHub.
-
-### Task 4: Validate the simulator.
-
-In many enterprises, committing to `main` is restricted. Branch policies are used to control how code gets to `main`. This allows you to set up gates on delivery, such as requiring code reviews and status checks. In this task, you will create a branch protection rule and see it in action.
-
->**Note**: Branch protection rules apply to Pro, Team, and Enterprise GitHub users.
-
-1. In your lab files GitHub repository, navigate to the `Settings` tab and select the `Branches` blade.
-
-    ![GitHub Branch settings for the repository](media/hol-ex2-task3-step1-1.png "Branch Protection Rules")
-
-2. Select the `Add rule` button to add a new branch protection rule for the `main` branch. Be sure to specify `main` in the branch name pattern field. Enable the following options and choose the `Create` button to create the branch protection rules:
-
-   - Require pull request reviews before merging
-   - Require status checks to pass before merging
-   - Require branches to be up to date before merging
-
-    ![Branch protection rule creation form](media/hol-ex2-task3-step2-1.png "Create a new branch protection rule in GitHub")
-
-3. With the branch protection rule in place, direct commits and pushes to the `main` branch will be disabled. Verify this rule by making a small change to your README.md file. Attempt to commit the change to the `main` branch in your local repository followed by a push to the remote repository.
-
-    ```pwsh
-    PS C:\Workspaces\lab\mcw-continuous-delivery-lab-files> git add .
-
-    PS C:\Workspaces\lab\mcw-continuous-delivery-lab-files> git commit -m "Updating README.md"
-
-    [main cafa839] Updating README.md
-    1 file changed, 2 insertions(+)
-    PS C:\Workspaces\lab\mcw-continuous-delivery-lab-files> git push
-
-    Enumerating objects: 5, done.
-    Counting objects: 100% (5/5), done.
-    Delta compression using up to 32 threads
-    Compressing objects: 100% (3/3), done.
-    Writing objects: 100% (3/3), 315 bytes | 315.00 KiB/s, done.
-    Total 3 (delta 2), reused 0 (delta 0), pack-reused 0
-    remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
-    remote: error: GH006: Protected branch update failed for refs/heads/main.
-    remote: error: At least 1 approving review is required by reviewers with write access.
-    To https://github.com/YOUR_GITHUB_ACCOUNT/mcw-continuous-delivery-lab-files.git
-    ! [remote rejected] main -> main (protected branch hook declined)
-    error: failed to push some refs to 'https://github.com/YOUR_GITHUB_ACCOUNT/mcw-continuous-delivery-lab-files.git'
-    ```
-
 ## Exercise 3: Training, Assessments, Optimization
 
 Duration: 40 minutes
 
-Fabrikam Medical Conferences has its first website for a customer running in the cloud, but deployment is still a largely manual process, and we have no insight into the behavior of the application in the cloud. In this exercise, we will add monitoring and logging to gain insight on the application usage in the cloud. Then, we will disable the GitHub pipeline and show how to build a deployment pipeline in Azure DevOps.
+At this point, you should be able to train the brain.  
 
 ### Task 1: Set up Application Insights
 
