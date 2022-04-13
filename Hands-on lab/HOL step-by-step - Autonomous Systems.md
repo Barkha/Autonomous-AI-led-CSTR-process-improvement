@@ -33,8 +33,7 @@ Microsoft and the trademarks listed at <https://www.microsoft.com/en-us/legal/in
   - [Exercise 1: Creating the Brain](#exercise-1-creating-the-brain)
     - [Task 1: Set up Bonsai on Azure](#task-1-set-up-bonsai-on-azure)
     - [Task 2: Creating a Brian](#task-2-creating-a-brain)
-    - [Task 3: Adding some Code to the Brain](#task-3-adding-code-to-the-brain)
-    - [Task 4: Using Dependabot](#task-4-using-dependabot)
+    - [Task 3: Adding Inkling Code](#task-3-adding-inkling-code)
   - [Exercise 2: Creating the Simulator in Bonsai](#exercise-2-creating-a-simulator)
     - [Task 1: Set up Cloud Infrastructure](#task-1-set-up-cloud-infrastructure)
     - [Task 2: Deploy to Azure Web Application](#task-2-deploy-to-azure-web-application)
@@ -90,7 +89,7 @@ You should follow all steps in the [Before the hands-on lab setup guide](Before%
 
 Duration: 40 minutes
 
-After a requirements gathering effort, we find that Fabrikam Medical Conferences has many areas of potential improvement in their development workflow. Specifically, we conclude that there are a lot of manual tasks that can be automated. Automation potentially mitigates many of the recurring quality and security issues. Also, the dependencies between Fabrikam's developers' work and productivity are reduced. We will begin to address some of these efforts in this exercise to improve developer flow and establish continuous integration practices.
+After a requirements gathering effort, Contoso has decided to use the Bonsai platform to optimize their CSTR process.  They will be optimizing for avoiding thermal runaway as well as minimize concentration reference.
 
 **Help references**
 
@@ -106,29 +105,40 @@ After a requirements gathering effort, we find that Fabrikam Medical Conferences
 
 You are going to set the Resource group, create Bonsai Tool Chain, and open Bonsai UI.
 
-1. Log into your Azure subscription
+1. Log into your Azure subscription.
 
 2. Select Resource group:
+
 ![Select Resource Group.](media/1-1.png "Resource Group")
 
 3. Select Create:
+
 ![Select Resource Group Create.](media/1-2.png "Resource Group - create")
 
 4. Name your Resourcegroup and select the subscription and region, select review + create.  NOTE that your subscription name will vary.  Note also that Bonsai is only available in US West Geo.
+
 ![Select Resource Group Name, Geo.](media/1-3.png "Resource Group - create")
 
 5. Validation should pass.  Create the resource group.
+
 ![Create Resource Group.](media/1-4.png "Resource Group - create")
 
 6. Navigate to the Resource Group (using pop-up after create completes). Search for Bonsai. Create a Bonsai service.  This should take a few minutes.
+
 ![Create Bonsai.](media/1-5.png "Bonsai - create 1")
+
 ![Create Bonsai.](media/1-6.png "Bonsai - create 2")
+
 ![Create Bonsai.](media/1-7.png "Bonsai - create 3")
+
 ![Create Bonsai.](media/1-8.png "Bonsai - create 4")
+
 ![Create Bonsai.](media/1-9.png "Bonsai - create 5")
 
 7. Navigate to Bonsai (using pop-up after create completes). Search for Bonsai. Select Launch Bonsai Workspace. You might be prompted for a password.  Congratulations, you have now created a Bonsai Service!
+
 ![Launch Bonsai.](media/1-10.png "Bonsai - Launch 1")
+
 ![Launch Bonsai.](media/1-11.png "Bonsai - Launch 2")
 
 ### Task 2: Creating a Brain
@@ -136,41 +146,36 @@ You are going to set the Resource group, create Bonsai Tool Chain, and open Bons
 Now that we have have the Bonsai Service deployed, we will start with creating a Brain.
 
 1. From the Bonsai UI environment, select Create Brain:
+
 ![Create Brain.](media/2-1.png "Create Brain 1")
 
 2. Name your Brain, and select OK.  You will see an empty Brain created and an error that you cannot train the brain.  This is because your Brain is empty :-D.
+
 ![Create Brain.](media/2-2.png "Create Brain 2")
+
 ![Create Brain.](media/2-3.png "Create Brain 3")
+
 ![Create Brain.](media/2-4.png "Create Brain 4")
 
-### Task 3: Editing the GitHub Workflow File Locally
+### Task 3: Adding Inkling Code
 
-The last task automated building and updating only one of the Docker images. In this task, we will update the workflow file with a more appropriate workflow for the structure of our repository. This task will end with a file named `docker-publish.yml` that will rebuild and publish Docker images as their respective code is updated.
+Now that we have the Bonsai UI and we have successfully created a Bonsai Brain, let's start with adding some code. Bonsai uses Inkling language.  The idea is to provide a high level language that is easy to understand and use.
 
-1. Pull the changes from your repository to your copy of the code.
+1. Let's add some initial code.  Note that this won't compile just yet.  The first step is to add some goals.  As stated in the problem, the idea is to have two goals: drive the concentration to something we defined, and avoid temprature going beyond a limit we set.  Add the following code to the "graph" section of the empty brain:
 
-2. Copy `docker-publish.yml` from the `Hands-on lab\lab-files` folder to the `.github\workflows` folder, overwriting what you created in steps 1-5.
-
-    - This file builds the following workflow:
-  ![GitHub workflow with 4 jobs - Check modified files, Update the API Docker image, Update the Init Docker image, Update the Web Docker image. This example shows a commit updating the Init and Web APIs. The workflow shows Update the API Docker image skipped, while Update the Init Docker image and Update the Web Docker image are in progress.](media/github-actions-workflow-with-skip.png)
-    - The `check_changed_folders` job takes the following steps:
-
-      1. Look through all files in the `git diff`.
-      2. If there are files changed in `content-api`, set a flag to update the API Docker Image.
-      3. If there are files changed in `content-web`, set a flag to update the Web Docker Image.
-      4. If there are files changed in `content-init`, set a flag to update the Init Docker Image.
-  
-    - Each of the `build-` jobs are marked with `needs` to depend on the `git diff` check. The `if` indicates the condition that will trigger that job to run.
-
-3. Commit this change to your repo, then push the change to GitHub.
-
-    > **Note**: You can optionally add `workflow_dispatch:` in the `on:` trigger section to set a manual trigger for the GitHub Actions workflow.
-
-    > **Note**: If you encounter any errors due to `cosign`, feel free to remove the image signing section from the workflow, as it is not needed to complete the lab. You could alternatively add a manual trigger (see above) and try running the workflow again, to determine if the error is transient.
-
-4. Navigate to the `Packages` tab in your GitHub account and verify that the container images have been built and pushed to the container registry.
-
-    ![GitHub Packages tab listing summary of container images that have been pushed to the container registry.](media/hol-ex1-task4-step12-1.png "GitHub Packages")
+```text
+# The objective of training is expressed as 2 goals
+# (1) drive concentration close to reference
+# (2) avoid temperature going beyond limit
+goal (State: SimState) {
+	minimize `Concentration Reference` weight 1:
+		Math.Abs(State.Cref - State.Cr)
+		in Goal.RangeBelow(0.25)
+	avoid `Thermal Runaway` weight 4:
+		Math.Abs(State.Tr)
+		in Goal.RangeAbove(400)
+}
+```
 
 ### Task 4: Using Dependabot
 
