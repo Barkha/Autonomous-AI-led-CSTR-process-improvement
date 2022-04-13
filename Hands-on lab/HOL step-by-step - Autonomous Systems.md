@@ -30,20 +30,20 @@ Microsoft and the trademarks listed at <https://www.microsoft.com/en-us/legal/in
   - [Solution architecture](#solution-architecture)
   - [Requirements](#requirements)
   - [Before the hands-on lab](#before-the-hands-on-lab)
-  - [Exercise 1: Creating the Brain](#exercise-1-creating-the-brain)
+ - [Exercise 1: Creating the Brain](#exercise-1-creating-the-brain)
     - [Task 1: Set up Bonsai on Azure](#task-1-set-up-bonsai-on-azure)
     - [Task 2: Creating a Brian](#task-2-creating-a-brain)
     - [Task 3: Adding Inkling Code](#task-3-adding-inkling-code)
-  - [Exercise 2: Creating the Simulator in Bonsai](#exercise-2-creating-a-simulator)
+ - [Exercise 2: Creating the Simulator in Bonsai](#exercise-2-creating-a-simulator)
     - [Task 1: Set up Cloud Infrastructure](#task-1-set-up-cloud-infrastructure)
     - [Task 2: Deploy to Azure Web Application](#task-2-deploy-to-azure-web-application)
     - [Task 3: Continuous Deployment with GitHub Actions](#task-3-continuous-deployment-with-github-actions)
     - [Task 4: Branch Policies in GitHub (Optional)](#task-4-branch-policies-in-github-optional)
- - [Exercise 4: Deploying the brain](#exercise-3-deploying-the-brin)
+ - [Exercise 3: Training, Assessment, optimization](#exercise-3-training-assessment-optimization)
     - [Task 1: Set up Application Insights](#task-1-set-up-application-insights)
     - [Task 2: Linking Git commits to Azure DevOps issues](#task-2-linking-git-commits-to-azure-devops-issues)
     - [Task 3: Continuous Deployment with Azure DevOps Pipelines](#task-3-continuous-deployment-with-azure-devops-pipelines)
-    - [Exercise 3: Training, Assessment, optimization](#exercise-3-training-assessment-optimization)
+ - [Exercise 4: Deploying the brain](#exercise-3-deploying-the-brin)
     - [Task 1: Set up Application Insights](#task-1-set-up-application-insights)
     - [Task 2: Linking Git commits to Azure DevOps issues](#task-2-linking-git-commits-to-azure-devops-issues)
     - [Task 3: Continuous Deployment with Azure DevOps Pipelines](#task-3-continuous-deployment-with-azure-devops-pipelines)
@@ -160,68 +160,111 @@ Now that we have have the Bonsai Service deployed, we will start with creating a
 ### Task 3: Adding Inkling Code
 
 Now that we have the Bonsai UI and we have successfully created a Bonsai Brain, let's start with adding some code. Bonsai uses Inkling language.  The idea is to provide a high level language that is easy to understand and use.
-
-1. Let's add some initial code.  Note that this won't compile just yet.  The first step is to add some goals.  As stated in the problem, the idea is to have two goals: drive the concentration to something we defined, and avoid temprature going beyond a limit we set.  Add the following code to the "graph" section of the empty brain:
+1. Define some simulator constants.  A Bonsai Brain has to Learn in order to be able to act later.  In order for it to learn, it uses a Simulator.  We will be adding a Simulator in the next excercise, however we can define the simulator inputs and ouputs in this section.  
+ We define:
+	i. The desired concentration
+	ii. The current concentration
+	iii. The current temperature
+	iv. The desired temprature
+	v. The coolant absolute temprature 
+	
+We also define some contants for limits on concentration and temprature.
+Finally, we define a SimState - this is the structure that will be used as an input for the Brain.
+Add the following code outside the graph block, and below the "using" statements:
 
 ```text
-# The objective of training is expressed as 2 goals
-# (1) drive concentration close to reference
-# (2) avoid temperature going beyond limit
-goal (State: SimState) {
-	minimize `Concentration Reference` weight 1:
-		Math.Abs(State.Cref - State.Cr)
-		in Goal.RangeBelow(0.25)
-	avoid `Thermal Runaway` weight 4:
-		Math.Abs(State.Tr)
-		in Goal.RangeAbove(400)
+# Limits for concentration
+const conc_max = 12
+const conc_min = 0
+
+# Limits for reactor temperature
+const temp_max = 800
+const temp_min = 10
+
+# State received from the simulator after each iteration
+type SimState {
+    Cr: number<conc_min .. conc_max>,         # Concentration: Real-time reactor read
+    Tr: number<temp_min .. temp_max>,         # Temperature: Real-time reactor read
+    Cref: number<conc_min .. conc_max>,       # Concentration: Target reference to follow
+    Tref: number<temp_min .. temp_max>,       # Temperature: Target reference to follow
+    Tc: number<temp_min .. temp_max>,         # Coolant absolute temperature as input to the simulation
+}
+
+```
+2. Now, we define the Observable State.  The Brain uses the Observable State as a graph input to make a descision on what action to take.  
+
+```text
+# State which are used to train brain
+type ObservableState {
+    Cr: number<conc_min .. conc_max>,         # Concentration: Real-time reactor read
+    Tr: number<temp_min .. temp_max>,         # Temperature: Real-time reactor read
+    Cref: number<conc_min .. conc_max>,       # Concentration: Target reference to follow
+    Tc: number<temp_min .. temp_max>,         # Coolant absolute temperature as input to the simulation
+}
+
+```
+
+3. Let's add some initial code.  Note that this won't compile just yet.  The first step is to add a Concept.  A concept is something the brain will learn from.  Our first concept is ModifyConcentration.  Note that this is the primary function of a CSTR.  We will represent it by setting a couple of goals. In order to do that, we define a curriculum that encapsulates the two goals we are setting here - to optimize the concentration, and avoid thermal runaway.  Notice the goal to bring the concentratio is to compare the desired concentration vs. the actual, and try to bring it within a 0.25 range.  The second goal is to avoid tempratures above 400.
+
+```text
+graph (input: ObservableState) {
+    concept ModifyConcentration(input):SimAction {
+        curriculum {
+
+            # The objective of training is expressed as 2 goals
+            # (1) drive concentration close to reference
+            # (2) avoid temperature going beyond limit
+            goal (State: SimState) {
+                minimize `Concentration Reference` weight 1:
+                    Math.Abs(State.Cref - State.Cr)
+                    in Goal.RangeBelow(0.25)
+                avoid `Thermal Runaway` weight 4:
+                    Math.Abs(State.Tr)
+                    in Goal.RangeAbove(400)
+            }
+        }        
+    }
+}
+```
+4. Notice that in our code we indicate that the Graph output is a SimAction. This is the meat of the Brain - to make a sequential descision based on a given observale state.  So let's define a SimAction now, along with some constants.  Tc_adjust tells the simulator adjust the temprature by.
+NOTE that this needs to be above the graph block.
+
+```text
+const Ts = 0.5 # Sim Period
+const coolant_temp_deriv_limit_per_min = 10 # Coolant temperature derivative limit per minute
+const coolant_temp_deriv_limit = Ts * coolant_temp_deriv_limit_per_min
+
+# Action provided as output by policy and sent as to the simulator
+type SimAction {
+    # Delta to be applied to initial coolant temp (absolutely, not per-iteration)
+    Tc_adjust: number<-coolant_temp_deriv_limit .. coolant_temp_deriv_limit>
+}
+
+```
+5. At this time, you should get a warning about the curriculum not having a source.  In order to learn, we need a source (a simulator) to learn from.  Let's go ahead and define that:
+
+```text
+simulator CSTRSimulator(Action: SimAction): SimState {
+    # Automatically launch the simulator with this registered package name.
+    package "CSTR"
 }
 ```
 
-### Task 4: Using Dependabot
+And modify the curriculum by adding the following line in the curriculum block:
 
-Another part of continuous integration is having a bot help track versions of the packages used in the application and notify us when there are newer versions. In this task, we will use Dependabot to track the versions of the packages we use in our GitHub repository and create pull requests to update packages for us.
+```text
+simulator CSTRSimulator(Action: SimAction): SimState {
+    # Automatically launch the simulator with this registered package name.
+    package "CSTR"
+}
+```
 
-1. In your lab files GitHub repository, navigate to the `Security` tab. Select the `Enable Dependabot alerts` button.
+6. At this point, you should have inkling code that compiles (no errors) however, if you hit the train button, it should give you a warning, "CSTR" package not found.  We will be addig the simulator in the next section.
 
-    ![The GitHub Repository Security Overview tab.](media/hol-ex1-task2-step1-1.png "GitHub Repository Security Overview")
+![Train Brain.](media/3-1.png "Trian Brain 1")
 
-2. You should arrive at the `Security & analysis` blade under the `Settings` tab. Enable `Dependabot security updates`.
 
-    > **Note**: Enabling the `Dependabot security updates` will also automatically enable `Dependency graph` and `Dependabot alerts`.
-
-    ![The GitHub Repository Security and Analysis blade under the GitHub repository Settings tab. We enable Dependabot alerts and security updates here.](media/hol-ex1-task2-step2-1.png "GitHub Security & Analysis Settings")
-
-    > **Note**: The alerts for the repository may take some time to appear. The rest of the steps for this task rely on the alerts to be present.
-
-3. To observe Dependabot issues, navigate to the `Security` tab and select the `View Dependabot alerts` link. You should arrive at the `Dependabot alerts` blade in the `Security` tab.
-
-    ![GitHub Dependabot alerts in the Security tab.](media/hol-ex1-task2-step3-1.png "GitHub Dependabot alerts")
-
-4. Sort the Dependabot alerts by `Package name`. Locate the `handlebars` vulnerability by typing `handlebars` in the search box under the `Package` dropdown menu.
-
-    ![Summary of the `handlebars` Dependabot alert in the list of Dependabot alerts.](media/hol-ex1-task2-step4-1.png "`handlebars` Dependabot alert")
-
-5. Select any of the `handlebars` Dependabot alert entries to see the alert detail. After reviewing the alert, select `Create Dependabot security update` and wait a few moments for GitHub to create the security update.
-
-    ![The `handlebars` Dependabot alert detail.](media/hol-ex1-task2-step5-1.png "Dependabot alert detail")
-
-    ![The Dependabot security update message observed when creating a Dependabot security update.](media/hol-ex1-task2-step5-2.png "Dependabot security update message")
-
-6. In the `Pull Requests` tab, find the Dependabot security patch pull request and merge it to your main branch.
-
-    ![List of Pull Requests.](media/hol-ex1-task2-step6-1.png "Pull Requests")
-
-    ![The Pull Request Merge Button in the Pull Request detail.](media/hol-ex1-task2-step6-2.png "Pull Request Merge Button")
-
-7. Pull the latest changes from your GitHub repository to your local GitHub folder.
-
-    ```pwsh
-    cd C:\Workspaces\lab\mcw-continuous-delivery-lab-files  # This path may vary depending on how
-                                                            # you set up your lab files repository
-    git pull
-    ```
-
-## Exercise 2: Continuous Delivery / Continuous Deployment
+## Exercise 2: Create a Simulator
 
 Duration: 40 minutes
 
