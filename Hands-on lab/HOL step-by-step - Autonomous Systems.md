@@ -267,7 +267,7 @@ source CSTRSimulator
 
 Duration: 40 minutes
 
-Now that we have created the Bonsai Service and written some inkling code, let's work wtih the Simulator.  In this case, Contoso Chemicals is using a Python simulator in oder to simulate the conditions within a CSTR process.
+Now that we have created the Bonsai Service and written some inkling code, let's work wtih the Simulator.  In this case, Contoso Chemicals is using a Mathlab simulator in oder to simulate the conditions within a CSTR process.
 
 **Help references**
 
@@ -275,7 +275,6 @@ Now that we have created the Bonsai Service and written some inkling code, let's
 | ------------------------------------- | ---------------------------------------------------------------------- |
 | **Description**                       | **Link**                                                              |
 | What is Training Simulations for Bonsai? | <https://docs.microsoft.com/en-us/bonsai/product/components/simulation> |
-| What is Azure Container Registry? | <https://docs.microsoft.com/en-us/Azure/container-registry/> |
 
 ### Task 1: Create a Simulator
 
@@ -309,11 +308,11 @@ https://github.com/microsoft/bonsai-cstr
 
 7. After you select the Create Simulator, you should see a new Simulator added that looks something like this:
 
-![Create Simulator.](media/4-4.png "Create Simulator 4")
+![Create Simulator.](media/4-5.png "Create Simulator 5")
 
 4. Select the Launch Simulator which should fetch the Simulator Interface like so: (Note this may take a while).
 
-![Create Simulator.](media/4-5.png "Create Simulator 5")
+![Create Simulator.](media/4-6.png "Create Simulator 6")
 
 Note that you should be able to see the definition of SimState, SimAction and SimConfig.  The SimState and SimAction should match exactly with the way we defined it.  The additional SimConfig section needs to be added to the Inkling code.
 
