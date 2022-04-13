@@ -30,21 +30,25 @@ Microsoft and the trademarks listed at <https://www.microsoft.com/en-us/legal/in
   - [Solution architecture](#solution-architecture)
   - [Requirements](#requirements)
   - [Before the hands-on lab](#before-the-hands-on-lab)
-  - [Exercise 1: Continuous Integration](#exercise-1-continuous-integration)
-    - [Task 1: Set up Local Infrastructure](#task-1-set-up-local-infrastructure)
-    - [Task 2: Build Automation with GitHub Registry](#task-2-build-automation-with-github-registry)
-    - [Task 3: Editing the GitHub Workflow File Locally](#task-3-editing-the-github-workflow-file-locally)
+  - [Exercise 1: Creating the Brain](#exercise-1-creating-the-brain)
+    - [Task 1: Set up Bonsai on Azure](#task-1-set-up-bonsai-on-azure)
+    - [Task 2: Creating a Brian](#task-2-creating-a-brain)
+    - [Task 3: Adding some Code to the Brain](#task-3-adding-code-to-the-brain)
     - [Task 4: Using Dependabot](#task-4-using-dependabot)
-  - [Exercise 2: Continuous Delivery / Continuous Deployment](#exercise-2-continuous-delivery--continuous-deployment)
+  - [Exercise 2: Creating the Simulator in Bonsai](#exercise-2-creating-a-simulator)
     - [Task 1: Set up Cloud Infrastructure](#task-1-set-up-cloud-infrastructure)
     - [Task 2: Deploy to Azure Web Application](#task-2-deploy-to-azure-web-application)
     - [Task 3: Continuous Deployment with GitHub Actions](#task-3-continuous-deployment-with-github-actions)
     - [Task 4: Branch Policies in GitHub (Optional)](#task-4-branch-policies-in-github-optional)
-  - [Exercise 3: Monitoring, Logging, and Continuous Deployment with Azure](#exercise-3-monitoring-logging-and-continuous-deployment-with-azure)
+ - [Exercise 4: Deploying the brain](#exercise-3-deploying-the-brin)
     - [Task 1: Set up Application Insights](#task-1-set-up-application-insights)
     - [Task 2: Linking Git commits to Azure DevOps issues](#task-2-linking-git-commits-to-azure-devops-issues)
     - [Task 3: Continuous Deployment with Azure DevOps Pipelines](#task-3-continuous-deployment-with-azure-devops-pipelines)
-  - [After the hands-on lab](#after-the-hands-on-lab)
+    - [Exercise 3: Training, Assessment, optimization](#exercise-3-training-assessment-optimization)
+    - [Task 1: Set up Application Insights](#task-1-set-up-application-insights)
+    - [Task 2: Linking Git commits to Azure DevOps issues](#task-2-linking-git-commits-to-azure-devops-issues)
+    - [Task 3: Continuous Deployment with Azure DevOps Pipelines](#task-3-continuous-deployment-with-azure-devops-pipelines)
+- [After the hands-on lab](#after-the-hands-on-lab)
     - [Task 1: Tear down Azure Resources](#task-1-tear-down-azure-resources)
 
 <!-- /TOC -->
@@ -77,27 +81,12 @@ One of the concerns regarding this CSTR is that the chemical reaction happening 
      - Has the [Owner](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#owner) built-in role for the subscription you use.
      - Is a [Member](https://docs.microsoft.com/azure/active-directory/fundamentals/users-default-permissions#member-and-guest-users) user in the Azure AD tenant you use. (Guest users will not have the necessary permissions.)
 
-2. A [GitHub](https://github.com) account.
-
-3. Local machine or a virtual machine configured with:
-
-    - A browser, preferably Chrome, to be consistent with the lab implementation tests.
-
-4. Git for Windows
-
-5. PowerShell
-
-    - As you will be running PowerShell scripts, make sure that the ExecutionPolicy is set properly. Consult [the Microsoft PowerShell documentation on execution policies](https://docs.microsoft.com/powershell/module/microsoft.powershell.core/about/about_execution_policies) for more details.
-
-6. Docker Desktop for Windows
-
-7. [Azure CLI](https://docs.microsoft.com/cli/azure/)
 
 ## Before the hands-on lab
 
 You should follow all steps in the [Before the hands-on lab setup guide](Before%20the%20HOL%20-%20Continuous%20delivery%20in%20Azure%20DevOps.md) *before* performing the Hands-on lab. Pay close attention to product versions, as the version numbers called out in the lab have been tested and shown successful for the lab.
 
-## Exercise 1: Continuous Integration
+## Exercise 1: Creating the Brain
 
 Duration: 40 minutes
 
