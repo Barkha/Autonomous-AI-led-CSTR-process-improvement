@@ -241,7 +241,7 @@ type SimAction {
 }
 
 ```
-5. At this time, you should get a warning about the curriculum not having a source.  In order to learn, we need a source (a simulator) to learn from.  Let's go ahead and define that:
+5. At this time, you should get a warning about the curriculum not having a source.  In order to learn, we need a source (a simulator) to learn from.  Let's go ahead and define that outside the graph block:
 
 ```text
 simulator CSTRSimulator(Action: SimAction): SimState {
@@ -253,13 +253,12 @@ simulator CSTRSimulator(Action: SimAction): SimState {
 And modify the curriculum by adding the following line in the curriculum block:
 
 ```text
-simulator CSTRSimulator(Action: SimAction): SimState {
-    # Automatically launch the simulator with this registered package name.
-    package "CSTR"
-}
+
+source CSTRSimulator
+
 ```
 
-6. At this point, you should have inkling code that compiles (no errors) however, if you hit the train button, it should give you a warning, "CSTR" package not found.  We will be addig the simulator in the next section.
+6. At this point, you should have inkling code that compiles (no errors) however, if you hit the train button, it should give you a warning, "CSTR" package not found.  We will be adding the simulator in the next section.
 
 ![Train Brain.](media/3-1.png "Trian Brain 1")
 
@@ -268,242 +267,87 @@ simulator CSTRSimulator(Action: SimAction): SimState {
 
 Duration: 40 minutes
 
-The Fabrikam Medical Conferences developer workflow has been improved. We are ready to consider migrating from running on-premises to a cloud implementation to reduce maintenance costs and facilitate scaling when necessary. We will take steps to run the containerized application in the cloud as well as automate its deployment.
+Now that we have created the Bonsai Service and written some inkling code, let's work wtih the Simulator.  In this case, Contoso Chemicals is using a Python simulator in oder to simulate the conditions within a CSTR process.
 
 **Help references**
 
 |                                       |                                                                        |
 | ------------------------------------- | ---------------------------------------------------------------------- |
 | **Description**                       | **Link**                                                              |
-| What is Continuous Delivery? | <https://docs.microsoft.com/devops/deliver/what-is-continuous-delivery> |
-| Continuous delivery vs. continuous deployment | <https://azure.microsoft.com/overview/continuous-delivery-vs-continuous-deployment/> |
-| Microsoft Learn - Introduction to continuous delivery | <https://docs.microsoft.com/learn/modules/introduction-to-continuous-delivery> |
-| Microsoft Learn - Explain DevOps Continuous Delivery and Continuous Quality | <https://docs.microsoft.com/learn/modules/explain-devops-continous-delivery-quality/> |
+| What is Training Simulations for Bonsai? | <https://docs.microsoft.com/en-us/bonsai/product/components/simulation> |
+| What is Azure Container Registry? | <https://docs.microsoft.com/en-us/Azure/container-registry/> |
 
-### Task 1: Set up Cloud Infrastructure
+### Task 1: Create a Simulator
 
-First, we need to set up the cloud infrastructure. We will use PowerShell scripts and the Azure Command Line Interface (CLI) to set this up.
+First, we need to create the Simulator to use with our Brain.  In this case, we will be using an already created Simulator using MatLab.
 
-1. Open your local GitHub folder for your `mcw-continuous-delivery-lab-files` repository.
+1. In a web browser, go to the following github repo:
 
-2. Open the `deploy-infrastructure.ps1` PowerShell script in the `infrastructure` folder. Add a custom lowercase three-letter abbreviation for the `$studentprefix` variable on the first line.
+```Text
+https://github.com/microsoft/bonsai-cstr
+```
 
-    ```pwsh
-    $studentprefix = "Your 3 letter abbreviation here"  # <-- Modify this value
-    $resourcegroupName = "fabmedical-rg-" + $studentprefix
-    $cosmosDBName = "fabmedical-cdb-" + $studentprefix
-    $webappName = "fabmedical-web-" + $studentprefix
-    $planName = "fabmedical-plan-" + $studentprefix
-    $location1 = "westeurope"
-    $location2 = "northeurope"
+2. Select the "Code" -> "Download Zip"
+
+![Create Simulator.](media/4-0.png "Create Simulator 1")
+
+3. From the Bonsai UI, select the Add Simulator button
+
+![Create Simulator.](media/4-1.png "Create Simulator 1")
+
+4. From the poup, select "MathLabs":
+
+![Create Simulator.](media/4-2.png "Create Simulator 2")
+
+5. Upload the Zip file downloaded in step 2.
+
+![Create Simulator.](media/4-3.png "Create Simulator 3")
+
+6. Make sure to choose a unique and meaningful name.  This name will be used in the inkling code as a reference. You may also, depending on your budget, set the Memory, core requirements and max instances.  Note that this is the data that will be used to stand up instances of simulators while training the brain.
+
+![Create Simulator.](media/4-4.png "Create Simulator 4")
+
+7. After you select the Create Simulator, you should see a new Simulator added that looks something like this:
+
+![Create Simulator.](media/4-4.png "Create Simulator 4")
+
+4. Select the Launch Simulator which should fetch the Simulator Interface like so: (Note this may take a while).
+
+![Create Simulator.](media/4-5.png "Create Simulator 5")
+
+Note that you should be able to see the definition of SimState, SimAction and SimConfig.  The SimState and SimAction should match exactly with the way we defined it.  The additional SimConfig section needs to be added to the Inkling code.
+
+### Task 2: Connect to Bonsai Brain
+
+Once you have a Simulator setup, you will need to update the inkling code to connect to the "real" simulator. 
+
+1. Navigate to the Brain you created in the previous excercise.  Edit the curricum, change the source to what you named the Simulator as follows:
+
+    ```text
+    package "CSTRSim42"
     ```
 
-3. Note the individual calls to the Azure CLI for the following:
-    - Creating a Resource Group
+2. Add the SimConfig definition from the Simulator code outside the graph block.  Note that the Cref_signal is a numeric value, used by the Simulator.  We define it as a rage between 1 & 5, stepping 1 at a time. The noise_percentage is a rnage between 0 & 100.
 
-        ```pwsh
-        # Create resource group
-        az group create `
-            --location $location1 `
-            --name $resourcegroupName
-        ```
-
-    - Creating an Azure Cosmos DB Database
-
-        ```pwsh
-        # Create Azure Cosmos DB database
-        az cosmosdb create `
-            --name $cosmosDBName `
-            --resource-group $resourcegroupName `
-            --locations regionName=$location1 failoverPriority=0 isZoneRedundant=False `
-            --locations regionName=$location2 failoverPriority=1 isZoneRedundant=True `
-            --enable-multiple-write-locations `
-            --kind MongoDB
-        ```
-
-    - Creating an Azure App Service Plan
-
-        ```pwsh
-        # Create Azure App Service Plan
-        az appservice plan create `
-            --name $planName `
-            --resource-group $resourcegroupName `
-            --sku S1 `
-            --is-linux
-        ```
-
-    - Creating an Azure Web App
-
-        ```pwsh
-        # Create Azure Web App with NGINX container
-        az webapp create `
-            --resource-group $resourcegroupName `
-            --plan $planName `
-            --name $webappName `
-            --deployment-container-image-name nginx
-        ```
-
-4. Log into Azure using the Azure CLI.
-
-    ```pwsh
-    az login
-    az account set --subscription <your subscription guid>
+    ```text
+    # Per-episode configuration that can be sent to the simulator.
+	# All iterations within an episode will use the same configuration.
+	type SimConfig {
+		# Scenario to be run - 5 scenarios: 1-based INT
+		# > 1: Concentration transition --> 8.57 to 2.000 - 0 min delay
+		# > 2: Concentration transition --> 8.57 to 2.000 - 10 min delay 
+		# > 3: Concentration transition --> 8.57 to 2.000 - 20 min delay
+		# > 4: Concentration transition --> 8.57 to 2.000 - 30 min delay
+		# > 5: Steady State --> 8.57
+		Cref_signal: number<1 .. 5 step 1>,
+		noise_percentage: number<0 .. 100>  # Percentage of noise to include
+	}
     ```
+3. At this point, you should be able to train the brain by clicking the green button:
 
-    **Note**: Your subscription plan guid is the `id` field that comes back in the response JSON. In the following example, the subscription guid is `726da029-91f0-4dc1-a728-f25664374559`.
+![Create Simulator.](media/4-6.png "Create Simulator 6")
 
-    ```json
-      {
-    "cloudName": "AzureCloud",
-    "homeTenantId": "8f4781a5-82b9-4181-a022-4e9e91028be4",
-    "id": "726da029-91f0-4dc1-a728-f25664374559",
-    "isDefault": true,
-    "managedByTenants": [],
-    "name": "Your Azure Subscription Name",
-    "state": "Enabled",
-    "tenantId": "8f4781a5-82b9-4181-a022-4e9e91028be4",
-    "user": {
-      "name": "your-name@your-domain.com",
-      "type": "user"
-    }
-    ```
-
-5. Run the `deploy-infrastructure.ps1` PowerShell script.
-
-    ```pwsh
-    cd ./infrastructure
-    ./deploy-infrastructure.ps1
-    ```
-
-    >**Note**: Depending on your system, you may need to change the PowerShell Execution Policy. You can read more about this process [here.](https://docs.microsoft.com/powershell/module/microsoft.powershell.core/about/about_execution_policies)
-
-6. Browse to [the Azure portal](https://portal.azure.com) and verify creation of the resource group, Azure Cosmos DB instance, the App Service Plan, and the Web App.
-
-    ![Azure Resource Group containing cloud resources to which GitHub will deploy containers via the workflows defined in previous steps.](media/hol-ex2-task1-step6-1.png "Azure Resource Group")
-
-7. Open the `seed-cosmosdb.ps1` PowerShell script in the `infrastructure` folder of your lab files GitHub repository and add the same custom lowercase three-letter abbreviation we used in step 2 for the `$studentprefix` variable on the first line. Also update the `$githubAccount` variable with your GitHub account name.
-
-    ```pwsh
-    $studentprefix = "Your 3 letter abbreviation here"
-    $githubAccount = "Your github account name here"
-    $resourcegroupName = "fabmedical-rg-" + $studentprefix
-    $cosmosDBName = "fabmedical-cdb-" + $studentprefix
-    ```
-
-8. Observe the call to fetch the MongoDB connection string for the Azure Cosmos DB database.
-
-    ```pwsh
-    # Fetch Azure Cosmos DB Mongo connection string
-    $mongodbConnectionString = `
-        $(az cosmosdb keys list `
-            --name $cosmosDBName `
-            --resource-group $resourcegroupName `
-            --type connection-strings `
-            --query 'connectionStrings[0].connectionString')
-    ```
-
-9. The call to seed the Azure Cosmos DB database is using the MongoDB connection string passed as an environment variable (`MONGODB_CONNECTION`) to the `fabrikam-init` docker image we built in the previous exercise using `docker-compose`.
-
-    ```pwsh
-    # Seed Azure Cosmos DB database
-    docker run -ti `
-        -e MONGODB_CONNECTION="$mongodbConnectionString" `
-        ghcr.io/$githubAccount/fabrikam-init:main
-    ```
-
-    >**Note**: Before you pull this image, you may need to authenticate with the GitHub Docker registry. To do this, run the following command before you execute the script. Fill the placeholder appropriately. Use your PAT when it prompts for the password.
-
-    ```pwsh
-    docker login ghcr.io -u [USERNAME]
-    ```
-
-10. Run the `seed-cosmosdb.ps1` PowerShell script. Browse to [the Azure portal](https://portal.azure.com) and verify that the Azure Cosmos DB instance has been seeded.
-
-    ![Azure Cosmos DB contents displayed via the Azure Cosmos DB explorer in the Azure Cosmos DB resource detail.](media/hol-ex2-task1-step10-1.png "Azure Cosmos DB Seeded Contents")
-
-     >**Note**: If the `seed-cosmosdb.ps1` script cannot find the `fabrikam-init` image, you may need to check the possible versions by looking at the `fabrikam-init` package page in your `mcw-continuous-delivery-lab-files` repository in GitHub.
-
-    ![fabrikam-init package details displayed in the mcw-continuous-delivery-lab-files repository in GitHub.](media/hol-ex2-task1-step10-2.png "fabrikam-init package details in GitHub")
-
-11. Below the `sessions` collection, select **Scale & Settings** (1) and **Indexing Policy** (2).
-
-    ![Opening indexing policy for the sessions collection.](media/hol-ex2-task1-step11.png "Indexing policy configuration")
-
-12. Create a Single Field indexing policy for the `startTime` field (1). Then, select **Save** (2).
-
-    ![Creating an indexing policy for the startTime field.](media/hol-ex2-task1-step12.png "startTime field indexing")
-
-13. Open the `configure-webapp.ps1` PowerShell script in the `infrastructure` folder of your lab files GitHub repository and add the custom lowercase three-letter abbreviation you have been using for the `$studentprefix` variable on the first line.
-
-    ```pwsh
-    $studentprefix = "Your 3 letter abbreviation here"
-    $resourcegroupName = "fabmedical-rg-" + $studentprefix
-    $cosmosDBName = "fabmedical-cdb-" + $studentprefix
-    $webappName = "fabmedical-web-" + $studentprefix
-    ```
-
-14. Observe the call to configure the Azure Web App using the MongoDB connection string passed as an environment variable (`MONGODB_CONNECTION`) to the web application.
-
-    ```pwsh
-    # Configure Web App
-    az webapp config appsettings set `
-        --name $webappName `
-        --resource-group $resourcegroupName `
-        --settings MONGODB_CONNECTION=$mongodbConnectionString
-    ```
-
-15. Run the `configure-webapp.ps1` PowerShell script. Browse to [the Azure portal](https://portal.azure.com) and verify that the environment variable `MONGODB_CONNECTION` has been added to the Azure Web Application settings.
-
-    ![Azure Web Application settings reflecting the `MONGODB_CONNECTION` environment variable configured via PowerShell.](media/hol-ex2-task1-step15-1.png "Azure Web Application settings")
-
-### Task 2: Deploy to Azure Web Application
-
-Once the infrastructure is in place, then we can deploy the code to Azure. In this task, you will deploy the application to an Azure Web Application using a PowerShell script that makes calls with the Azure CLI.
-
-1. Take the GitHub Personal Access Token you obtained in the Before the Hands-On Lab guided instruction and assign it to the `CR_PAT` environment variable in PowerShell. We will need this environment variable for the `deploy-webapp.ps1` PowerShell script, but we do not want to add it to any files that may get committed to the repository since it is a secret value.
-
-    ```pwsh
-    $env:CR_PAT="<GitHub Personal Access Token>"
-    ```
-
-2. Open the `deploy-webapp.ps1` PowerShell script in the `infrastructure` folder of your lab files GitHub repository and add the same custom lowercase three-letter abbreviation we used in step 1 for the `$studentprefix` variable on the first line and add your GitHub account name for the `$githubAccount` variable on the second line.
-
-    ```pwsh
-    $studentprefix = "Your 3 letter abbreviation here"
-    $githubAccount = "Your github account name here"
-    $resourcegroupName = "fabmedical-rg-" + $studentprefix
-    $webappName = "fabmedical-web-" + $studentprefix
-    ```
-
-3. The call to deploy the Azure Web Application is using the `docker-compose.yml` file we modified in the previous exercise.
-
-    ```pwsh
-    # Deploy Azure Web App
-    az webapp config container set `
-        --docker-registry-server-password $env:CR_PAT `
-        --docker-registry-server-url https://ghcr.io `
-        --docker-registry-server-user $githubAccount `
-        --multicontainer-config-file ./../docker-compose.yml `
-        --multicontainer-config-type COMPOSE `
-        --name $webappName `
-        --resource-group $resourcegroupName
-    ```
-
-4. Run the `deploy-webapp.ps1` PowerShell script.
-
-    > **Note**: Make sure to run the `deploy-webapp.ps1` script from the `infrastructure` folder
-
-5. Browse to [the Azure portal](https://portal.azure.com) and verify that the Azure Web Application is running by checking the `Log stream` blade of the Azure Web Application detail page.
-
-    ![Azure Web Application Log Stream displaying the STDOUT and STDERR output of the running container.](media/hol-ex2-task2-step5-1.png "Azure Web Application Log Stream")
-
-6. Browse to the `Overview` blade of the Azure Web Application detail page and find the web application URL. Browse to that URL to verify the deployment of the web application.
-
-    ![The Azure Web Application Overview detail in Azure portal.](media/hol-ex2-task2-step6-1.png "Azure Web Application Overview")
-
-    ![The Contoso Conference website hosted in Azure.](media/hol-ex2-task2-step6-2.png "Azure hosted Web Application")
-
-### Task 3: Continuous Deployment with GitHub Actions
+### Task 3: Code modifications to integrate the simulator.
 
 With the infrastructure in place, we can set up continuous deployment with GitHub Actions.
 
@@ -586,7 +430,7 @@ With the infrastructure in place, we can set up continuous deployment with GitHu
 
 7. Perform a `git pull` on your local repository folder to fetch the latest changes from GitHub.
 
-### Task 4: Branch Policies in GitHub (Optional)
+### Task 4: Validate the simulator.
 
 In many enterprises, committing to `main` is restricted. Branch policies are used to control how code gets to `main`. This allows you to set up gates on delivery, such as requiring code reviews and status checks. In this task, you will create a branch protection rule and see it in action.
 
@@ -629,7 +473,7 @@ In many enterprises, committing to `main` is restricted. Branch policies are use
     error: failed to push some refs to 'https://github.com/YOUR_GITHUB_ACCOUNT/mcw-continuous-delivery-lab-files.git'
     ```
 
-## Exercise 3: Monitoring, Logging, and Continuous Deployment with Azure
+## Exercise 3: Training, Assessments, Optimization
 
 Duration: 40 minutes
 
