@@ -191,6 +191,7 @@ type SimState {
 }
 
 ```
+
 2. Now, we define the Observable State.  The Brain uses the Observable State as a graph input to make a descision on what action to take.  
 
 ```text
@@ -204,11 +205,12 @@ type ObservableState {
 
 ```
 
-3. Let's add some initial code.  Note that this won't compile just yet.  The first step is to add a Concept.  A concept is something the brain will learn from.  Our first concept is ModifyConcentration.  Note that this is the primary function of a CSTR.  We will represent it by setting a couple of goals. In order to do that, we define a curriculum that encapsulates the two goals we are setting here - to optimize the concentration, and avoid thermal runaway.  Notice the goal to bring the concentratio is to compare the desired concentration vs. the actual, and try to bring it within a 0.25 range.  The second goal is to avoid tempratures above 400.
+3. Let's add some initial code.  Note that this won't compile just yet. The first step is to add a couple of concepts.  component of a brain that must be learned, imported or programmed. Our first concept is a Learn concept: ModifyConcentration.  Note that this is the primary function of a CSTR.  We will represent it by setting a couple of goals. In order to do that, we define a curriculum that encapsulates the two goals we are setting here - to optimize the concentration, and avoid thermal runaway.  Notice the goal to bring the concentratio is to compare the desired concentration vs. the actual, and try to bring it within a 0.25 range.  The second goal is to avoid tempratures above 400.
 
 ```text
+
 graph (input: ObservableState) {
-    concept ModifyConcentration(input):SimAction {
+    output concept ModifyConcentration(input):SimAction {
         curriculum {
 
             # The objective of training is expressed as 2 goals
@@ -225,6 +227,7 @@ graph (input: ObservableState) {
         }        
     }
 }
+
 ```
 4. Notice that in our code we indicate that the Graph output is a SimAction. This is the meat of the Brain - to make a sequential descision based on a given observale state.  So let's define a SimAction now, along with some constants.  Tc_adjust tells the simulator adjust the temprature by.
 NOTE that this needs to be above the graph block.
@@ -241,12 +244,13 @@ type SimAction {
 }
 
 ```
+
 5. At this time, you should get a warning about the curriculum not having a source.  In order to learn, we need a source (a simulator) to learn from.  Let's go ahead and define that outside the graph block:
 
 ```text
 simulator CSTRSimulator(Action: SimAction): SimState {
     # Automatically launch the simulator with this registered package name.
-    package "CSTR"
+    package "placeholder"
 }
 ```
 
@@ -258,7 +262,7 @@ source CSTRSimulator
 
 ```
 
-6. At this point, you should have inkling code that compiles (no errors) however, if you hit the train button, it should give you a warning, "CSTR" package not found.  We will be adding the simulator in the next section.
+6. At this point, you should have inkling code that compiles (no errors) however, if you hit the train button, it should give you a warning, "placeholder" package not found.  We will be adding the simulator in the next section.
 
 ![Train Brain.](media/3-1.png "Trian Brain 1")
 
@@ -283,7 +287,9 @@ First, we need to create the Simulator to use with our Brain.  In this case, we 
 1. In a web browser, go to the following github repo:
 
 ```Text
+
 https://github.com/microsoft/bonsai-cstr
+
 ```
 
 2. Select the "Code" -> "Download Zip"
@@ -318,27 +324,52 @@ Once you have a Simulator setup, you will need to update the inkling code to con
 
 1. Navigate to the Brain you created in the previous excercise.  Edit the curricum, change the source to what you named the Simulator as follows:
 
-    ```text
+```text
+
     package "CSTRSim42"
-    ```
+	
+```
 
 2. Add the SimConfig definition from the Simulator code outside the graph block.  Note that the Cref_signal is a numeric value, used by the Simulator.  We define it as a rage between 1 & 5, stepping 1 at a time. The noise_percentage is a rnage between 0 & 100.
 
-    ```text
-    # Per-episode configuration that can be sent to the simulator.
-	# All iterations within an episode will use the same configuration.
-	type SimConfig {
-		# Scenario to be run - 5 scenarios: 1-based INT
-		# > 1: Concentration transition --> 8.57 to 2.000 - 0 min delay
-		# > 2: Concentration transition --> 8.57 to 2.000 - 10 min delay 
-		# > 3: Concentration transition --> 8.57 to 2.000 - 20 min delay
-		# > 4: Concentration transition --> 8.57 to 2.000 - 30 min delay
-		# > 5: Steady State --> 8.57
-		Cref_signal: number<1 .. 5 step 1>,
-		noise_percentage: number<0 .. 100>  # Percentage of noise to include
+```text
+# Per-episode configuration that can be sent to the simulator.
+# All iterations within an episode will use the same configuration.
+type SimConfig {
+	# Scenario to be run - 5 scenarios: 1-based INT
+	# > 1: Concentration transition --> 8.57 to 2.000 - 0 min delay
+	# > 2: Concentration transition --> 8.57 to 2.000 - 10 min delay 
+	# > 3: Concentration transition --> 8.57 to 2.000 - 20 min delay
+	# > 4: Concentration transition --> 8.57 to 2.000 - 30 min delay
+	# > 5: Steady State --> 8.57
+	Cref_signal: number<1 .. 5 step 1>,
+	noise_percentage: number<0 .. 100>  # Percentage of noise to include
+}
+```
+3. In order to train the brain, we will need to add some additional code in the cooncept to define the parameters of the training like so:
+
+```text
+training {
+	EpisodeIterationLimit: 90,
+	NoProgressIterationLimit: 500000
+}
+```
+Note that Episodes, or how many training iterations are run are limited by EpisodeIterationLimit.  In our case, we set it to 90.  We also define a condition where Trainig will end without desired results to be 500000. 
+
+4. We also add a lesson fro the Machine Teaching to limit how we iterate over each episode. In other words, 
+
+```text
+lesson `Follow Planned Concentration` {
+	# Specify the configuration parameters that should be varied
+	# from one episode to the next during this lesson.
+	scenario {
+		Cref_signal: number<1>, # Transition from 8.57 to 2 with no delay
+		noise_percentage: number<0 .. 5>,
 	}
-    ```
-3. At this point, you should be able to train the brain by clicking the green button:
+}    
+```
+	
+5. At this point, you should be able to train the brain by clicking the green button:
 
 ![Create Simulator.](media/4-6.png "Create Simulator 6")
 
@@ -350,61 +381,12 @@ At this point, you should be able to train the brain.
 
 ### Task 1: Set up Application Insights
 
-In this task, we will set up Application Insights to gain some insights on how our site is being used and assist in debugging if we run into issues.
+In this task, we will train the brain we have created.  We will also explore how to use assessments, and wwe will add more concepts to our brain to optimize the results we want.
 
-1. Open the `deploy-appinsights.ps1` PowerShell script in the `infrastructure` folder of your lab files GitHub repository and add the same custom lowercase three-letter abbreviation we used in step 1 for the `$studentsuffix` variable on the first line.
+1. From the Bonsai UI, click on the train button for your Brain:
 
-    ```pwsh
-    $studentsuffix = "Your 3 letter abbreviation here"
-    $resourcegroupName = "fabmedical-rg-" + $studentsuffix
-    $location1 = "westeurope"
-    $appInsights = "fabmedicalai-" + $studentsuffix
-    ```
+![Train Brain.](media/5-1.png "Train Brain 1")
 
-2. Run the `deploy-appinsights.ps1` PowerShell script from a PowerShell terminal and save the `AI Instrumentation Key` specified in the output - we will need it for a later step.
-
-    ```bash
-    The installed extension 'application-insights' is in preview.
-    AI Instrumentation Key="55cade0c-197e-4489-961c-51e2e6423ea2"
-    ```
-
-3. Navigate to the `./content-web` folder in your GitHub lab files repository and execute the following to install JavaScript support for Application Insights via NPM to the web application frontend.
-
-    ```bash
-    npm install applicationinsights --save
-    ```
-
-4. Modify the file `./content-web/app.js` to reflect the following to add and configure Application Insights for the web application frontend.
-
-    ```js
-    const express = require('express');
-    const http = require('http');
-    const path = require('path');
-    const request = require('request');
-
-    const app = express();
-
-    const appInsights = require("applicationinsights");         # <-- Add these lines here
-    appInsights.setup("55cade0c-197e-4489-961c-51e2e6423ea2");  # <-- Make sure AI Inst. Key matches
-    appInsights.start();                                        # <-- key from step 2.
-
-    app.use(express.static(path.join(__dirname, 'dist/content-web')));
-    const contentApiUrl = process.env.CONTENT_API_URL || "http://localhost:3001";
-    ```
-
-5. Add and commit changes to your GitHub lab-files repository. From the root of the repository, execute the following:
-
-    ```pwsh
-    git add .
-    git commit -m "Added Application Insights"
-    git push
-    ```
-
-6. Wait for the GitHub Actions for your lab files repository to complete before executing the next step.
-
-7. Redeploy the web application by running the `deploy-webapp.ps1` PowerShell script from the `infrastructure` folder.
-
-8. Visit the deployed website and check Application Insights in [the Azure portal](https://portal.azure.com) to see instrumentation data.
 
 ### Task 2: Linking Git commits to Azure DevOps issues
 
