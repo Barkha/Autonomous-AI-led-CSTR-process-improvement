@@ -37,7 +37,7 @@ Microsoft and the trademarks listed at <https://www.microsoft.com/en-us/legal/in
  - [Exercise 2: Creating the Simulator in Bonsai](#exercise-2-creating-a-simulator)
     - [Task 1: Create A Simulator](#task-1-create-a-simulator)
     - [Task 2: Connect to Bonsai Brain](#task-2-connect-to-bonsai-brain)
- - [Exercise 3: Training, Assessment, optimization](#exercise-3-training-assessment-optimization)
+ - [Exercise 3: Assessment and Optimization](#exercise-3-assessment-and-optimization)
     - [Task 1: Training the Brain](#task-1-training-the-brian)
     - [Task 2: Using Assessments](#task-2-using-assessments)
     - [Task 3: Adding additional concepts to optimize](#task-3-adding-additional-concepts-to-optimize)
@@ -201,7 +201,7 @@ type ObservableState {
 
 ```
 
-3. Let's add some initial code.  Note that this won't compile just yet. The first step is to add a couple of concepts.  component of a brain that must be learned, imported or programmed. Our first concept is a Learn concept: ModifyConcentration.  Note that this is the primary function of a CSTR.  We will represent it by setting a couple of goals. In order to do that, we define a curriculum that encapsulates the two goals we are setting here - to optimize the concentration, and avoid thermal runaway.  Notice the goal to bring the concentratio is to compare the desired concentration vs. the actual, and try to bring it within a 0.25 range.  The second goal is to avoid tempratures above 400.
+3. Let's add some initial code.  Note that this won't compile just yet. The first step is to add a concept.  A concept is the component of a brain that must be learned, imported or programmed. Our first concept is a Learn concept: ModifyConcentration.  Learned concepts specify a curriculum that defines how the AI should be taught. We will define the curriculum by adding a couple of goals. In order to do that, we define a curriculum that encapsulates the two goals we are setting here - to optimize the concentration, and avoid thermal runaway.  Notice the goal to bring the concentratio is to compare the desired concentration vs. the actual, and try to bring it within a 0.25 range.  The second goal is to avoid tempratures above 400.
 
 ```text
 
@@ -352,7 +352,7 @@ training {
 ```
 Note that Episodes, or how many training iterations are run are limited by EpisodeIterationLimit.  In our case, we set it to 90.  We also define a condition where Trainig will end without desired results to be 500000. 
 
-4. We also add a lesson fro the Machine Teaching to limit how we iterate over each episode. In other words, 
+4. We also add a lesson using Machine Teaching to limit how we iterate over each episode. In other words, 
 
 ```text
 lesson `Follow Planned Concentration` {
@@ -369,281 +369,54 @@ lesson `Follow Planned Concentration` {
 
 ![Create Simulator.](media/4-6.png "Create Simulator 6")
 
-## Exercise 3: Training, Assessments, Optimization
+## Exercise 3: Assessment and Optimization
 
 Duration: 40 minutes
 
-At this point, you should be able to train the brain.  
+At this point, we are ready to train the brain and look at some results.    
 
-### Task 1: Set up Application Insights
+### Task 1: Training the Brain
 
-In this task, we will train the brain we have created.  We will also explore how to use assessments, and wwe will add more concepts to our brain to optimize the results we want.
+In the previous excercise, we hit the "train" button. Now we are ready to explore the Bonsai Platform using the outputs, errors, and assessments.
 
-1. From the Bonsai UI, click on the train button for your Brain:
+1. From the Bonsai UI, click on the train button for your Brain (if you haven't already done so in the last excercise):
 
-![Train Brain.](media/5-1.png "Train Brain 1")
+![Train Brain.](media/4-6.png "Train Brain 1")
 
-### Task 2: Linking Git commits to Azure DevOps issues
+Your screen should look like so:
 
-In this task, you will create an issue in Azure DevOps and link a Git pull request from GitHub to the Azure DevOps issue. This uses the Azure Boards integration that was set up in the Before Hands on Lab.
+![Train Brain.](media/5-1.png "Train Brain 2")
 
-1. Create a new issue for modifying the README.md in Azure Boards
+Note that the training process is creating multiple copies of simulation in order to train the brain. This takes time.  You can use the Erros and Output window to view the progress of the training process.
 
-    !["New issue for updating README.md added to Azure Boards"](media/hol-ex2-task3-step4-1.png "Azure Boards")
+### Task 2: Using Assessments
 
-    > **Note**: Make note of the issue number, as you will need it for a later step.
+In this task, you will review the assessments, and create some custom assessments.
 
-2. Create a branch from `main` and name it `feature/update-readme`.
+1. While the Brain is training, you can monitor the progress.  One way is to view the Episodes.  Select the "Teach" tab, and scroll to see the progress of each episode:
 
-    ```pwsh
-    git checkout main
-    git checkout -b feature/update-readme  # <- This creates the branch and checks it out    
-    ```    
+![Train Brain.](media/5-2.png "Train Brain 3")
 
-3. Make a small change to README.md. Commit the change, and push it to GitHub.
+2. You can select the Assessments to see the results.  New assesssments sets are created as the Brain Training continues.  Click on the Assessment 0 to see the results:
 
-    ```pwsh
-    git commit -m "README.md update"
-    git push --set-upstream origin feature/update-readme
-    ```
+![Train Brain.](media/5-3.png "Train Brain 4")
 
-4. Create a pull request to merge `feature/update-readme` into `main` in GitHub. Add the annotation `AB#YOUR_ISSUE_NUMBER_FROM_STEP_4` in the description of the pull request to link the GitHub pull request with the new Azure Boards issue in step 4. For example, if your issue number is 2, then your annotation in the pull request description should include `AB#2`.
+3. If you scroll on the Assessment, you can see the results for each goal in the inkling code:
 
-    > **Note**: The `Docker` build workflow executes as part of the status checks.
+![Train Brain.](media/5-3.png "Train Brain 5")
 
-5. Select the `Merge pull request` button after the build completes successfully to merge the Pull Request into `main`.
+![Train Brain.](media/5-4.png "Train Brain 6")
 
-    !["Pull request for merging the feature/update-main branch into main"](media/hol-ex2-task3-step7-1.png "Create pull request")
+![Train Brain.](media/5-5.png "Train Brain 7")
 
-    > **Note**: Under normal circumstances, this pull request would be reviewed by someone other than the author of the pull request. For now, use your administrator privileges to force the merge of the pull request.
+4. After the training completes, which could take more than an hour, you should be able to see the graph indicating the goal optimization:
 
-6. Observe in Azure Boards that the Issue is appropriately linked to the GitHub comment.
+![Train Brain.](media/5-7.png "Train Brain 8")
 
-    !["The Update README.md issue with the comment from the pull request created in step 6 linked"](media/hol-ex2-task3-step8-1.png "Azure Boards Issue")
 
-### Task 3: Continuous Deployment with Azure DevOps Pipelines
+### Task 3: Adding Aditional Code to Optimize
 
-> **Note**: This section demonstrates Continuous Deployment via ADO pipelines, which is equivalent to the Continuous Deployment via GitHub Actions demonstrated in Task 2. For this reason, disabling GitHub action here is critical so that both pipelines (ADO & GitHub Actions) don't interfere with each other.
-> **Note**: To complete [Exercise 3: Task 3](#task-3-continuous-deployment-with-azure-devops-pipelines), the student will need to request a free grant of parallel jobs in Azure Pipelines via [this form](https://aka.ms/azpipelines-parallelism-request). More information can be found [here regarding changes in Azure Pipelines Grant for Public Projects](https://devblogs.microsoft.com/devops/change-in-azure-pipelines-grant-for-public-projects/)
 
-1. Disable your GitHub Actions by adding the `branches-ignore` property to the existing workflows in your lab files repository (located under the `.github/workflows` folder).
-
-    ```pwsh
-    on:
-      push:
-        branches-ignore:    # <-- Add this list property
-          - '**'            # <-- with '**' to disable all branches
-    ```
-
-2. Navigate to your Azure DevOps `Fabrikam` project, select the `Project Settings` blade, and open the `Service Connections` tab.
-
-3. Create a new `Docker Registry` service connection and set the values to:
-
-    - Docker Registry: <https://ghcr.io>
-    - Docker ID: [GitHub account name]
-    - Docker Password: [GitHub Personal Access Token]
-    - Service connection name: GitHub Container Registry
-
-    ![Azure DevOps Project Service Connection Configuration that establishes the credentials necessary for Azure DevOps to push to the GitHub Container Registry.](media/hol-ex3-task3-step3-1.png "Azure DevOps Project Service Connection Configuration")
-
-4. Navigate to your Azure DevOps `Fabrikam` project, select the `Pipelines` blade, and create a new pipeline.
-
-    ![Initial creation page for a new Azure DevOps Pipeline.](media/hol-ex3-task3-step4-1.png "Azure DevOps Pipelines")
-
-5. In the `Connect` tab, choose the `GitHub` selection.
-
-    ![Azure DevOps Pipeline Connections page where we associate the GitHub repository with this pipeline.](media/hol-ex3-task3-step5-1.png "Azure DevOps Pipeline Connections")
-
-6. Select your GitHub lab files repository. Azure DevOps will redirect you to authorize yourself with GitHub. Log in and select the repository that you want to allow Azure DevOps to access.
-
-7. In the `Configure` tab, choose the `Starter Pipeline`.
-
-    ![Selecting the Starter pipeline on the Configure your pipeline step in Azure DevOps.](media/hol-ex3-task3-step7-1.png "Selecting the Starter pipeline")
-
-8. Remove all the steps from the YAML. The empty pipeline should look like the following:
-
-    ```yaml
-    # Starter pipeline
-    # Start with a minimal pipeline that you can customize to build and deploy your code.
-    # Add steps that build, run tests, deploy, and more:
-    # https://aka.ms/yaml
-
-    trigger:
-    - main
-
-    pool:
-      vmImage: ubuntu-latest
-
-    steps:
-    ```
-
-9. In the sidebar, find the `Docker Compose` task and configure it with the following fields, then select the **Add** button:
-
-    - Container Registry Type: Container Registry
-    - Docker Registry Service Connection: GitHub Container Registry (created in step 3)
-    - Docker Compose File: **/docker-compose.yml
-    - Additional Docker Compose Files: build.docker-compose.yml
-    - Action: Build Service Images
-    - Additional Image Tags = $(Build.BuildNumber)
-
-    ![Docker Compose Task definition in the AzureDevOps pipeline.](media/hol-ex3-task3-step9-1.png "Docker Compose Task")
-    ![Docker Compose Task Values in the AzureDevOps pipeline.](media/hol-ex3-task3-step9-2.png "Docker Compose Task Values")
-
-    >**Note**: If the sidebar doesn't appear, you may need to select `Show assistant`.
-
-10. Repeat step 9 and add another `Docker Compose` task and configure it with the following fields:
-
-    - Container Registry Type: Container Registry
-    - Docker Registry Service Connection: GitHub Container Registry (created in step 3)
-    - Docker Compose File: **/docker-compose.yml
-    - Additional Docker Compose Files: build.docker-compose.yml
-    - Action: Push Service Images
-    - Additional Image Tags = $(Build.BuildNumber)
-
-    >**Note**: Pay close attention to the **Action** in Step 10. This is where it differs from Step 9.
-
-    The YAML should be:
-
-    ```yaml
-    # Starter pipeline
-    # Start with a minimal pipeline that you can customize to build and deploy your code.
-    # Add steps that build, run tests, deploy, and more:
-    # https://aka.ms/yaml
-
-    trigger:
-    - main
-
-    pool:
-    vmImage: ubuntu-latest
-
-    steps:
-    - task: DockerCompose@0
-    inputs:
-        containerregistrytype: 'Container Registry'
-        dockerRegistryEndpoint: 'GitHub Container Registry'
-        dockerComposeFile: '**/docker-compose.yml'
-        additionalDockerComposeFiles: 'build.docker-compose.yml'
-        action: 'Push services'
-        additionalImageTags: '$(Build.BuildNumber)'
-    - task: DockerCompose@0
-    inputs:
-        containerregistrytype: 'Container Registry'
-        dockerRegistryEndpoint: 'GitHub Container Registry'
-        dockerComposeFile: '**/docker-compose.yml'
-        additionalDockerComposeFiles: 'build.docker-compose.yml'
-        action: 'Push services'
-        additionalImageTags: '$(Build.BuildNumber)'
-    ```
-
-11. Save and run the build. New docker images will be built and pushed to the GitHub package registry.
-
-    >**Note**: You may need to grant permission for the pipeline to use the service connection before the run happens.
-
-    ![Run detail of the Azure DevOps pipeline previously created.](media/hol-ex3-task3-step11-1.png "Build Pipeline Run detail")
-
-    If you haven't been granted the parallelism, your job will fail with the following message:
-
-    ```text
-    ##[error]No hosted parallelism has been purchased or granted. To request a free parallelism grant, please fill out the following form https://aka.ms/azpipelines-parallelism-request
-    ```
-
-    Once parallelism is granted, then your pipeline can run.
-
-12. Navigate to your `Fabrikam` project in Azure DevOps and select the `Project Settings` blade. From there, select the `Service Connections` tab.
-
-13. Create a new `Azure Resource Manager` service connection and choose `Service Principal (automatic)`.
-
-14. Choose your target subscription and resource group and set the `Service Connection` name to `Fabrikam-Azure`. Save the service connection - we will reference it in a later step.
-
-15. Open the build pipeline in `Edit` mode, and then select the `Variables` button on the top-right corner of the pipeline editor. Add a secret variable `CR_PAT`, check the `Keep this value secret` checkbox, and copy the GitHub Personal Access Token from the Before the Hands-on lab guided instruction into the `Value` field. Save the pipeline variable - we will reference it in a later step.
-
-    ![Adding a new Pipeline Variable to an existing Azure DevOps pipeline.](media/hol-ex3-task3-step15-1.png "New Pipeline Variable")
-
-16. Modify the build pipeline YAML to split into a build stage and a deploy stage, as follows.
-
-    >**Note**: Pay close attention to the `DeployProd` stage, as you need to add your abbreviation to the `arguments` section.
-
-    ```yaml
-    # Starter pipeline
-    # Start with a minimal pipeline that you can customize to build and deploy your code.
-    # Add steps that build, run tests, deploy, and more:
-    # https://aka.ms/yaml
-
-    trigger:
-    - main
-
-    pool:
-      vmImage: ubuntu-latest
-
-    stages:
-    - stage: build
-      jobs:
-      - job: 'BuildAndPublish'
-        displayName: 'Build and Publish'
-        steps:
-        - task: DockerCompose@0
-          inputs:
-            containerregistrytype: 'Container Registry'
-            dockerRegistryEndpoint: 'GitHub Container Registry'
-            dockerComposeFile: '**/docker-compose.yml'
-            additionalDockerComposeFiles: 'build.docker-compose.yml'
-            action: 'Build services'
-            additionalImageTags: '$(Build.BuildNumber)'
-        - task: DockerCompose@0
-          inputs:
-            containerregistrytype: 'Container Registry'
-            dockerRegistryEndpoint: 'GitHub Container Registry'
-            dockerComposeFile: '**/docker-compose.yml'
-            additionalDockerComposeFiles: 'build.docker-compose.yml'
-            action: 'Push services'
-            additionalImageTags: '$(Build.BuildNumber)'
-
-    - stage: DeployProd
-      dependsOn: build
-      jobs:
-      - deployment: webapp
-        environment: production
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-              - checkout: self
-
-              - powershell: |
-                  (gc .\docker-compose.yml) `
-                    -replace ':latest',':$(Build.BuildNumber)' | `
-                    set-content .\docker-compose.yml
-                    
-              - task: AzureCLI@2
-                inputs:
-                  azureSubscription: 'Fabrikam-Azure' # <-- The service
-                  scriptType: 'pscore'                # connection from step 14
-                  scriptLocation: 'scriptPath'
-                  scriptPath: './infrastructure/deploy-webapp.ps1'
-                  workingDirectory: ./infrastructure
-                  arguments: 'Your 3 letter abbreviation here'         # <-- This should be your custom
-                env:                       # lowercase three character 
-                  CR_PAT: $(CR_PAT)  # prefix from an earlier exercise.
-                                # ^^^^^^
-                                # ||||||
-                                # The pipeline variable from step 15
-    ```
-
-17. Navigate to the `Environments` category with the `Pipelines` blade in the `Fabrikam` project and select the `production` environment.
-
-    ![Select Environments under the Pipelines section. Then select the production environment.](media/hol-ex3-task3-step17-1.png "Production environment selection in the Environments section")
-
-18. From the vertical ellipsis menu button in the top-right corner, select `Approvals and checks`.
-
-    ![Approvals and checks selection in the vertical ellipsis menu in the top right corner of the Azure DevOps pipeline editor interface.](media/hol-ex3-task3-step18-1.png "Approvals and checks selection")
-
-19. Add an `Approvals` check. Add your account as an `Approver` and create the check.
-
-    ![Adding an account as an `Approver` for an Approvals check.](media/hol-ex3-task3-step19-1.png "Checks selection")
-
-20. Run the build pipeline and note how the pipeline waits before moving to the `DeployProd` stage. You will need to approve the request before the `DeployProd` stage runs.
-
-    ![Reviewing DeployProd stage transition request during a pipeline execution.](media/review-deploy-to-app-service.png "Reviewing pipeline request")
 
 ## After the hands-on lab
 
