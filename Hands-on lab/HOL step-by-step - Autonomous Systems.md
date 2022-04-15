@@ -35,18 +35,14 @@ Microsoft and the trademarks listed at <https://www.microsoft.com/en-us/legal/in
     - [Task 2: Creating a Brian](#task-2-creating-a-brain)
     - [Task 3: Adding Inkling Code](#task-3-adding-inkling-code)
  - [Exercise 2: Creating the Simulator in Bonsai](#exercise-2-creating-a-simulator)
-    - [Task 1: Set up Cloud Infrastructure](#task-1-set-up-cloud-infrastructure)
-    - [Task 2: Deploy to Azure Web Application](#task-2-deploy-to-azure-web-application)
-    - [Task 3: Continuous Deployment with GitHub Actions](#task-3-continuous-deployment-with-github-actions)
-    - [Task 4: Branch Policies in GitHub (Optional)](#task-4-branch-policies-in-github-optional)
+    - [Task 1: Create A Simulator](#task-1-create-a-simulator)
+    - [Task 2: Connect to Bonsai Brain](#task-2-connect-to-bonsai-brain)
  - [Exercise 3: Training, Assessment, optimization](#exercise-3-training-assessment-optimization)
-    - [Task 1: Set up Application Insights](#task-1-set-up-application-insights)
-    - [Task 2: Linking Git commits to Azure DevOps issues](#task-2-linking-git-commits-to-azure-devops-issues)
-    - [Task 3: Continuous Deployment with Azure DevOps Pipelines](#task-3-continuous-deployment-with-azure-devops-pipelines)
+    - [Task 1: Training the Brain](#task-1-training-the-brian)
+    - [Task 2: Using Assessments](#task-2-using-assessments)
+    - [Task 3: Adding additional concepts to optimize](#task-3-adding-additional-concepts-to-optimize)
  - [Exercise 4: Deploying the brain](#exercise-3-deploying-the-brin)
-    - [Task 1: Set up Application Insights](#task-1-set-up-application-insights)
-    - [Task 2: Linking Git commits to Azure DevOps issues](#task-2-linking-git-commits-to-azure-devops-issues)
-    - [Task 3: Continuous Deployment with Azure DevOps Pipelines](#task-3-continuous-deployment-with-azure-devops-pipelines)
+    - [Task 1: Exporting a Brain](#task-1-exporting-a-brian)
 - [After the hands-on lab](#after-the-hands-on-lab)
     - [Task 1: Tear down Azure Resources](#task-1-tear-down-azure-resources)
 
@@ -386,7 +382,6 @@ In this task, we will train the brain we have created.  We will also explore how
 1. From the Bonsai UI, click on the train button for your Brain:
 
 ![Train Brain.](media/5-1.png "Train Brain 1")
-
 
 ### Task 2: Linking Git commits to Azure DevOps issues
 
