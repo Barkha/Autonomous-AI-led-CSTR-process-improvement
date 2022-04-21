@@ -66,7 +66,7 @@ One of the concerns regarding this CSTR is that the chemical reaction happening 
 
 ## Solution architecture
 
-![Solution architecture diagram illustrating the use of Autonomous Systems with Bonsai.](media/diagram.png "Desired solution architecture")
+![Solution architecture diagram illustrating the use of Autonomous Systems with Bonsai.](media/SolutionArchitectureDiagram.png "Desired solution architecture")
 
 ## Requirements
 
