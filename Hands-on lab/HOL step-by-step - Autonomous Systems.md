@@ -416,6 +416,96 @@ In this task, you will review the assessments, and create some custom assessment
 
 ### Task 3: Adding Aditional Code to Optimize
 
+We noticed in the last excercise we noticed that one of our goal did not get to 100%.  Let's see how we can improve this, by going back and adding more inkling code. 
+
+1. From the Bonsai UI, navigate to the existing Brain, move to the "Teach" Tab, and insert a new block of code with a new concept such as SteadyState:
+
+```text
+
+    concept SteadyState(input): SimAction {
+        curriculum {
+
+            source CSTRSimulator
+
+            training {
+                EpisodeIterationLimit: 90
+            }
+            # The objective of training is expressed as 2 goals
+            # (1) drive concentration close to reference
+            # (2) avoid temperature going beyond limit
+            goal (State: SimState) {
+                minimize `Concentration Reference` weight 1:
+                    Math.Abs(State.Cref - State.Cr)
+                    in Goal.RangeBelow(0.25)
+                avoid `Thermal Runaway` weight 4:
+                    Math.Abs(State.Tr)
+                    in Goal.RangeAbove(400)
+            }
+
+            lesson `Lesson 1` {
+                scenario {
+                    Cref_signal: number<5>, # Steady State of 8.57 kmol/m3
+                    noise_percentage: number<0 .. 5>,
+                }
+            }
+        }
+    }
+	
+```
+
+2. Now, let's add a selector Brain as follows:
+
+```text
+
+ output concept SelectStrategy(input): SimAction {
+    select SteadyState
+    select ModifyConcentration
+    curriculum {
+
+        source CSTRSimulator
+
+        training {
+            EpisodeIterationLimit: 90,
+            NoProgressIterationLimit: 500000
+        }
+        # The objective of training is expressed as 2 goals
+        # (1) drive concentration close to reference
+        # (2) avoid temperature going beyond limit
+        goal (State: SimState) {
+            minimize `Concentration Reference` weight 1:
+                Math.Abs(State.Cref - State.Cr)
+                in Goal.RangeBelow(0.25)
+            avoid `Thermal Runaway` weight 4:
+                Math.Abs(State.Tr)
+                in Goal.RangeAbove(400)
+        }
+
+        lesson `Lesson 1` {
+            scenario {
+                Cref_signal: number<2 .. 4 step 1>, # Combinations of Steady State and Transient State
+                noise_percentage: number<0 .. 5>,
+            }
+        }
+    }
+}
+
+```
+
+3. Remove the "output" keyword from the original concept ModifyConcentration.  Note that a brain can only have one output concept.
+
+```text
+
+output concept ModifyConcentration(input):SimAction {
+
+```
+
+4. You should now have the ability to train the brain using eachone of the concepts / curriculums.
+
+### Task 4: Adding a Visualizer
+
+The Bonsai platform allows you to use a visualizer in order to see the experiments being run and make visual observations.  The process of creating a visualizer will not be covered in this workshop.  However, in our case, there is an existing Visualizer we will leverage.
+
+1. 
 
 
 ## After the hands-on lab
