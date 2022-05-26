@@ -505,8 +505,48 @@ output concept ModifyConcentration(input):SimAction {
 
 The Bonsai platform allows you to use a visualizer in order to see the experiments being run and make visual observations.  The process of creating a visualizer will not be covered in this workshop.  However, in our case, there is an existing Visualizer we will leverage.
 
-1. 
+1. To add a Visualizer to the code, add the following line ourside the graph declaration:
 
+```text
+
+const SimulatorVisualizer = "https://microsoft.github.io/bonsai-cstr/visualizer/gauges/"
+
+```
+
+2. After adding the visualizer, you can test it by running the training again, and seel the visualizer.
+
+![Train Brain.](media/5-8.png "Train Brain 9")
+
+## Exporting The Brain
+
+Duration: 30 minutes
+
+The next step is to export the Brain, so it can be deployed.  Note that the most common way to deploy the brain 
+
+### Task 1: Export the Brain as a docker container
+
+Now, you are ready to export the Brain.  
+
+1. From the Trian Tab, you should be able to see the Export brain link like so:
+
+![Export Brain.](media/6-1.png "Export Brain 1")
+
+
+2. Click, and it will prompt you to export.  Note that you can choose the chipset at this point.
+
+![Export Brain.](media/6-2.png "Export Brain 2")
+
+3. The export process is now creating and registering a docker container in the Azure Docker Registry.  This may take a few minutes.
+
+![Export Brain.](media/6-3.png "Export Brain 1")
+
+4. When the export is complete, you will see the link to the exported brain like so:
+
+![Export Brain.](media/6-4.png "Export Brain 1")
+
+5. You should now be able to click on the link and see the instructions to download and run the docker container:
+
+![Export Brain.](media/6-5.png "Export Brain 1")
 
 ## After the hands-on lab
 
@@ -518,16 +558,10 @@ Now that the lab is complete, we need to tear down the Azure resources that we c
 
 Now that the lab is done, we are done with our Azure resources. It is good practice to tear down the resources and avoid incurring costs for unnecessary resources.
 
-1. Open the `teardown-infrastructure.ps1` PowerShell script in the `infrastructure` folder of your GitHub lab files repository and add the same custom lowercase three-letter abbreviation we used in a previous exercise for `$studentprefix` variable on the first line.
+1. Navigate to the Azure Resource Group in the Azure portal (portal.azure.com)
 
-    ```pwsh
-    $studentprefix ="Your 3 letter abbreviation here"
-    $resourcegroupName = "fabmedical-rg-" + $studentprefix
+![Delete Resource.](media/7-1.png "Delete Brain 1")
 
-    az ad sp delete --id "fabmedical-$studentprefix"
-    az group delete --name $resourceGroupName
-    ```
+2. Delete the entire resource group:
 
-2. Execute the `teardown-infrastructure.ps1` PowerShell script to tear down the Azure resources for this lab.
-
-You should follow all steps provided *after* attending the Hands-on lab.
+![Delete Resource.](media/7-2.png "delete Brain 1")
